@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+
+
+</head>
+<body onload="startGame()">
+<script>
+
+
+
+var myGamePiece;
+
+function startGame() {
+
+
+   
+    window.addEventListener('click', function (e){
+
+
+//alert("Onclick");
+
+console.log(e.button);
+if(e.buttons==0)
+alert("1");
+if(e.buttons==1)
+alert("2");
+if(e.buttons==2)
+alert("3");
+
+})
+document.addEventListener("contextmenu", ( e )=> { e.preventDefault();  return false; } )
+    myGameArea.start();
+
+    followStar = new component(20, 20, "white", -1, -1, 0, 0, "constellar");
+
+    myGamePiece2 = new component(20, 20, "blue", 240, 165, 0, 0, "planet", 0);
+
+    myGamePiece = new component(30, 30, "red", 10, 120, -50, -50, "star");
+
+}
+
+    
+
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = 480;
+        this.canvas.height = 270;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.interval = setInterval(updateGameArea, 20);
+        window.addEventListener('keydown', function (e) {
+            myGameArea.keys = (myGameArea.keys || []);
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");
+        })
+        window.addEventListener('keyup', function (e) {
+            myGameArea.keys[e.keyCode] = (e.type == "keydown");            
+        })
+      
+    }, 
+    clear : function(){
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+function component(width, height, color, x, y, xDiff, yDiff, type, rotation) {
+    this.constellation = [];
+    this.gamearea = myGameArea;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y; 
+    this.type = type;   
+    this.xDiff = xDiff;
+    this.yDiff = yDiff;
+
+    this.rotation = rotation;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if(this.type == "constellar")
+        {
+            ctx.beginPath();
+ctx.strokeStyle = color;
+ctx.arc(this.x ,this.y, this.width, 0, Math.PI * 2, true); // Outer circle
+ctx.stroke();
+
+
+        }
+        if(this.type == "planet"){
+
+            
+      // alert("got a planet");
+ctx.beginPath();
+ctx.strokeStyle = color;
+ctx.arc(this.x ,this.y, this.width, 0, Math.PI * 2, true); // Outer circle
+ctx.stroke();
+}
+else
+    {
+       
+        ctx.beginPath();
+ctx.strokeStyle = color;
+ctx.arc(this.x ,this.y , this.width, 0, Math.PI * 2, true); // Outer circle
+ctx.stroke();
+    }
+    }
+
+    this.addToConstellation=function(component){
+
+    
+        component.type = "constellar";
+        component.width = 5;
+
+        myGamePiece2.constellation.push(component);
+
+
+
+
+
+    }
+    this.rotateConstellation=function(component){
+
+        this.constellation.forEach(function(star)
+        {
+
+
+            star.newPos();
+        //    alert("star");
+           // alert("const");
+           
+        }
+        )
+
+
+
+
+
+    }
+    this.newPos = function() {
+
+        this.rotation += .1;
+       this.rotation %= 6.289
+        if(this.type =='planet')
+        {
+    //    if(this.type == 'planet')
+       // document.getElementById("demo").innerHTML = frames;
+       // this.x += this.speedX;
+      //  this.y += this.speedY;  
+        this.rotation += .1;   
+        //this.rotation = rotation;
+        
+        this.rotateConstellation();
+        }
+   
+        else {
+
+            if(this.type=="constellar")
+        {
+
+
+            this.x = myGamePiece2.x + 25 * Math.sin(myGamePiece2.rotation);
+            this.y = myGamePiece2.y + 25 *  Math.cos(myGamePiece2.rotation);
+           // this.newpos();
+                this.update();
+
+        }
+
+            if(this.type =="star")
+            {
+            if(myGamePiece.x < myGamePiece2.x)
+                {//if(myGamePiece2.speedX < 0)
+                       this.x-= myGamePiece2.speedX;
+              //    else
+                //   this.x += myGamePiece2.speedX;
+                }
+                else if(myGamePiece2.x == myGamePiece.x)
+                {//      AlerT("X =");
+
+                    this.z += myGamePiece2.speedX;
+                }
+            else
+            {
+           //     if(myGamePiece2.speedX > 0)
+                {
+                    this.x += myGamePiece2.speedX;
+                }
+            //    else
+                {
+                  //  this.xDiff += myGamePiece2.speedX;
+                }
+
+            }
+            if(myGamePiece.y < myGamePiece2.y)
+                {
+                        this.y -= myGamePiece2.speedY;
+                 
+                }
+                else if(myGamePiece.y == myGamePiece2.y)
+                {
+                 //  alert("y");
+                    this.y += myGamePiece2.speedY;
+                }
+            else
+            {
+                
+                    this.y += myGamePiece2.speedY;
+              
+
+            }
+        }
+        }
+    }
+    
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+
+        var centerX = this.x;
+        var centerY = this.y;
+        var otherCenterX = otherobj.x;
+        var otherCenterY = otherobj.y;
+
+        var radius1 = this.width;
+        var radius2 = otherobj.width;
+
+
+
+        var distanceX = centerX - otherCenterX;
+
+        var distanceY = centerY - otherCenterY;
+
+
+            var crash = true;
+var magnitude = Math.sqrt(distanceX * distanceX + distanceY * distanceY);
+
+
+//document.getElementById("demo").innerHTML = Math.sqrt(distanceY * distanceY);
+//alert(radius1);
+//alert(radius2);
+if(magnitude<(radius1 + radius2))
+{
+  //  alert("Crash");
+    myGamePiece.type = "constellar";
+    myGamePiece2.addToConstellation(myGamePiece);
+}
+return ( magnitude < (radius1 + radius2));
+
+}
+
+
+
+
+
+
+
+
+
+}
+
+function updateGameArea() {
+
+
+    if(myGamePiece.type == "star")
+    myGamePiece.crashWith(myGamePiece2);
+   // for (i = 0; i < myObstacles.length; i += 1) {
+      //  if (myGamePiece.crashWith(myGamePiece2)) {
+           // return;
+      //  } 
+    myGameArea.clear();
+    myGamePiece.speedX = 0;
+    myGamePiece.speedY = 0;    
+    myGamePiece2.speedX = 0;
+    myGamePiece2.speedY = 0;
+    myGamePiece.xDiff = 0;
+    myGamePiece.yDiff = 0;
+    if (myGameArea.keys && myGameArea.keys[37]) {myGamePiece2.speedX = -1; }
+    if (myGameArea.keys && myGameArea.keys[39]) {myGamePiece2.speedX = 1; }
+    if (myGameArea.keys && myGameArea.keys[38]) {myGamePiece2.speedY = -1; }
+    if (myGameArea.keys && myGameArea.keys[40]) {myGamePiece2.speedY = 1; }
+  // myGamePiece2.newPos();
+    myGamePiece2.update();
+    myGamePiece2.newPos();
+
+    if(myGamePiece.type != "constellar")
+    {
+    myGamePiece.newPos();    
+    myGamePiece.update();
+    }
+}
+
+
+</script>
+
+<p id="demo">GO</p>
+<p>Make sure this window has focus, then use the arrow keys on you keyboard to move the red square.</p>
+<p>When pressing both the left and the down arrow, the red square will move both down and to the left.</p>
+</body>
+</html>
